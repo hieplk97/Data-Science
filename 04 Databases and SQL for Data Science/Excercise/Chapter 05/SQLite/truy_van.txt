@@ -1,0 +1,71 @@
+A. Truy vấn đơn giản
+1. Liệt kê các nhân viên gồm: mã nhân viên, tên (first_name, last_name), ngày vào làm, lương
+(có thể định dạng ngày vào làm và lương)
+	SELECT employee_id, first_name||' '||last_name AS Name, hire_date, salary
+	FROM employees;
+
+	SELECT employee_id, first_name||' '||last_name AS Name, strftime('%d/%m/%Y',hire_date) AS hiredate, salary
+	FROM employees;
+2. Liệt kê các nhân viên có thêm cột biểu thức tham_nien (thâm niên = năm hiện tại - năm vào làm)
+(có thể sắp giảm theo thâm niên)
+	SELECT date('now'), strftime('%Y', 'now')
+
+	SELECT employee_id, first_name, hire_date, strftime('%Y', 'now') - strftime('%Y', hire_date) AS tham_nien
+	FROM employees
+	ORDER BY tham_nien DESC;
+3. Cho biết nhân viên có lương lớn nhất
+	SELECT *
+	FROM employees
+	ORDER BY salary DESC
+	LIMIT 1;
+4. Cho biết nhân viên có lương lớn nhất của phòng 80
+	SELECT *
+	FROM employees
+	WHERE department_id=80
+	ORDER BY salary DESC
+	LIMIT 1;
+5. Cho biết nhân viên có lương lớn nhất của mỗi phòng
+	SELECT e.department_id, e.first_name, e.salary
+	FROM employees e JOIN 
+	(SELECT department_id, max(salary) AS max_sal
+	FROM employees
+	GROUP BY department_id) g ON e.department_id=g.department_id
+	WHERE e.salary=g.max_sal
+	ORDER BY e.department_id;
+
+B. Truy vấn có nhóm
+1. Thống kê theo mã phòng và đếm số nhân viên, tổng lương theo phòng
+	SELECT department_id, COUNT(*) AS dem, SUM(salary) AS tong
+	FROM employees
+	WHERE department_id IS NOT NULL
+	GROUP BY department_id;
+2. Thống kê theo mã phòng, tên phòng và đếm số nhân viên, tổng lương theo phòng
+	SELECT e.department_id, d.department_name, COUNT(*) AS dem, SUM(salary) AS tong
+	FROM employees e JOIN departments d ON e.department_id=d.department_id
+	GROUP BY e.department_id, d.department_name
+	ORDER BY e.department_id;
+3. Cho biết phòng nào có tổng lương lớn nhất
+	SELECT e.department_id, d.department_name, COUNT(*) AS dem, SUM(salary) AS tong
+	FROM employees e JOIN departments d ON e.department_id=d.department_id
+	GROUP BY e.department_id, d.department_name
+	ORDER BY tong DESC
+	LIMIT 1;
+
+C. Truy vấn con
+1. Tìm các nhân viên có lương > trung bình lương
+	SELECT *
+	FROM employees
+	WHERE salary > (SELECT avg(salary) FROM employees);
+2. Tìm các nhân viên làm việc tại vị trí phòng là 1700
+	SELECT *
+	FROM employees
+	WHERE department_id IN (SELECT department_id FROM departments WHERE location_id=1700);
+3. Hiển thị tên trưởng phòng của phòng 80
+	SELECT *
+	FROM employees
+	WHERE employee_id =(SELECT manager_id FROM departments WHERE department_id=80);
+4. Hiển thị tên trưởng phòng của các phòng 80,90
+	SELECT *
+	FROM employees
+	WHERE employee_id IN(SELECT manager_id FROM departments WHERE department_id IN (80,90));
+

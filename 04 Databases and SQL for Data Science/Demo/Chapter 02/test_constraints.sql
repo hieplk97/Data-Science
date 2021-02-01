@@ -1,0 +1,122 @@
+-- MySQL
+CREATE DATABASE TestDB;
+-- tao constraint ngay luc tao bang
+CREATE TABLE testTab
+(
+    id INT PRIMARY KEY,
+    so_don CHAR(5) NOT NULL UNIQUE,
+    ngay_dat DATE NOT NULL,
+    ngay_giao DATE
+); -- COLUMN LEVEL
+
+INSERT INTO testTab VALUES(1, 'DH001', '2020-11-06', '2020-11-11'); -- OK
+INSERT INTO testTab VALUES(1, 'DH002', '2020-11-06', '2020-11-11'); -- ERROR
+INSERT INTO testTab VALUES(2, 'DH001', '2020-11-06', '2020-11-11'); -- ERROR
+INSERT INTO testTab VALUES(2, 'DH002', '2020-11-06', '2020-11-11'); -- OK
+INSERT INTO testTab(id, so_don) VALUES(3, 'DH003'); -- WARNING (MariaDB: ERROR)
+
+DROP TABLE testTab;
+CREATE TABLE testTab
+(
+    id INT PRIMARY KEY,
+    so_don CHAR(5) NOT NULL UNIQUE,
+    ngay_dat DATE NOT NULL,
+    ngay_giao DATE,
+    CONSTRAINT chk_ngay_dat CHECK(ngay_dat<=ngay_giao)
+); -- TABLE LEVEL
+INSERT INTO testTab VALUES(1, 'DH001', '2020-11-06', '2020-11-01'); -- ERROR
+INSERT INTO testTab VALUES(1, 'DH001', '2020-11-06', '2020-11-11'); -- OK
+
+-- DEFAULT CONSTRAINT
+DROP TABLE testTab;
+SELECT CURRENT_DATE, CURRENT_TIME, CURRENT_TIMESTAMP, NOW();
+CREATE TABLE testTab
+(
+    id INT PRIMARY KEY,
+    so_don CHAR(5) NOT NULL,
+    ngay_dat DATE DEFAULT(CURRENT_DATE),
+    ngay_giao DATE
+);
+INSERT INTO testTab(id, so_don) VALUES(1, 'DH001');
+
+-- tao constraint sau khi tao bang
+CREATE TABLE testTab
+(
+    id INT PRIMARY KEY,
+    so_don CHAR(5) NOT NULL,
+    ngay_dat DATETIME,
+    ngay_giao DATETIME
+);
+ALTER TABLE testtab
+ADD CONSTRAINT uq_testtab_sodon UNIQUE(so_don);
+INSERT INTO testTab VALUES(1, 'DH001', '2020-11-06 13:00:00', '2020-11-11 10:00:00'); -- OK
+INSERT INTO testTab VALUES(2, 'DH001', '2020-11-06 13:00:00', '2020-11-11 10:00:00'); -- ERROR
+
+ALTER TABLE testtab
+MODIFY ngay_giao DATETIME NOT NULL;
+INSERT INTO testTab(id, so_don, ngay_dat, ngay_giao) VALUES(3, 'DH003', CURRENT_TIMESTAMP, NULL); -- ERROR
+INSERT INTO testTab(id, so_don, ngay_dat, ngay_giao) VALUES(3, 'DH003', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP+1); -- OK
+INSERT INTO testTab(id, so_don, ngay_dat, ngay_giao) VALUES(4, 'DH004', CURRENT_TIMESTAMP, ADDDATE(CURRENT_TIMESTAMP,5));
+INSERT INTO testTab(id, so_don, ngay_dat, ngay_giao) VALUES(5, 'DH005', CURRENT_TIMESTAMP, ADDDATE(CURRENT_TIMESTAMP, INTERVAL 3 MONTH));
+
+
+ALTER TABLE testtab
+MODIFY ngay_dat DATETIME DEFAULT CURRENT_TIMESTAMP;
+INSERT INTO testTab(id, so_don) VALUES(2, 'DH002');
+
+DROP TABLE testTab;
+CREATE TABLE testTab
+(
+    id INT,
+    so_don CHAR(5) NOT NULL,
+    ngay_dat DATETIME,
+    ngay_giao DATETIME,
+    PRIMARY KEY(id)	
+);
+INSERT INTO testTab VALUES(1, 'DH001', '2020-11-06', '2020-11-11'); -- OK
+INSERT INTO testTab VALUES(1, 'DH002', '2020-11-06', '2020-11-11'); -- ERROR
+
+DROP TABLE testTab;
+CREATE TABLE testTab
+(
+    id INT,
+    so_don CHAR(5) NOT NULL,
+    ngay_dat DATETIME,
+    ngay_giao DATETIME
+);
+ALTER TABLE testtab
+ADD CONSTRAINT pk_testtab PRIMARY KEY(id);
+INSERT INTO testTab VALUES(1, 'DH001', '2020-11-06', '2020-11-11'); -- OK
+INSERT INTO testTab VALUES(1, 'DH002', '2020-11-06', '2020-11-11'); -- ERROR
+
+CREATE TABLE PB
+(
+  mapb CHAR(2) PRIMARY KEY,
+  tenpb VARCHAR(50) NOT NULL
+) ENGINE=INNODB;
+CREATE TABLE NV
+(
+  manv CHAR(3) PRIMARY KEY,
+  tennv VARCHAR(50) NOT NULL,
+  mapb CHAR(2)
+) ENGINE=INNODB;
+ALTER TABLE NV
+ADD CONSTRAINT fk_nv_pb FOREIGN KEY(mapb) REFERENCES PB(mapb);
+INSERT INTO PB VALUES ('KT','Phong Ke toan'), ('VT','Phong Ky thuat');
+INSERT INTO NV VALUES ('A01','Thanh Thao','KT'); -- OK
+INSERT INTO NV VALUES ('A02','Huyen Tran','TV'); -- ERROR
+INSERT INTO NV VALUES ('A02','Huyen Tran','KT'); -- OK
+
+DROP TABLE PB; -- ERROR
+DROP TABLE NV;
+DROP TABLE PB;
+
+CREATE TABLE Vay ( 
+   id INT  AUTO_INCREMENT PRIMARY KEY, 
+   MaKH CHAR(3), 
+   NgayVay DATE, 
+   SoTienVay FLOAT CHECK (SoTienVay > 0), 
+   NgayHetHan DATE
+);
+
+
